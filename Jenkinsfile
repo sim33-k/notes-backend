@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'notes-worker'
+        label 'docker-agent-node'
     }
 
     environment {
