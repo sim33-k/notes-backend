@@ -4,7 +4,7 @@ pipeline {
     }
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('sim33k')
+        DOCKERHUB_CREDENTIALS = credentials('b6d9feb8-e628-48d2-890a-54817dcb2651')
         IMAGE_NAME = "sim33k/notes-backend"
     }
 
