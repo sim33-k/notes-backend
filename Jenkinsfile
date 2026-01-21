@@ -1,10 +1,10 @@
-pipeline {
+pipeline {
     agent {
         label 'built-in'
     }
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-username')
+        DOCKERHUB_CREDENTIALS = credentials('sim33k')
         IMAGE_NAME = "sim33k/notes-backend"
     }
 
