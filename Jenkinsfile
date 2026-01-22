@@ -1,6 +1,6 @@
 pipeline {
     agent {
-	label 'docker-agent-node'
+        label 'docker-agent-node'
     }
 
     environment {
@@ -11,15 +11,21 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/sim33-k/notes-backend.git', branch: 'master'
+                // Use the same SCM configuration that triggered this pipeline
+                checkout scm
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
+                    // Build the Docker image
                     sh "docker build -t ${IMAGE_NAME}:latest ."
+
+                    // Get the short Git commit hash
                     def commitHash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+
+                    // Tag the Docker image with the commit hash
                     sh "docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:${commitHash}"
                 }
             }
@@ -28,8 +34,13 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
+                    // Login to Docker Hub using credentials
                     sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+
+                    // Push the latest tag
                     sh "docker push ${IMAGE_NAME}:latest"
+
+                    // Push the commit-hash tag
                     def commitHash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                     sh "docker push ${IMAGE_NAME}:${commitHash}"
                 }
@@ -37,4 +48,3 @@ pipeline {
         }
     }
 }
-
