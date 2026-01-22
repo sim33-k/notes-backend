@@ -9,13 +9,6 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                // Use the same SCM configuration that triggered this pipeline
-                checkout scm
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
