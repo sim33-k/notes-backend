@@ -1,6 +1,6 @@
 pipeline {
     agent {
-	label 'docker-agent-node'
+	label 'jenkins-agent-node20'
     }
 
     environment {
