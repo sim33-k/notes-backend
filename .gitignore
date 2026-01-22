@@ -1,0 +1,32 @@
+# Comments start with a hash symbol
+
+# Ignore common build output directories
+/build/
+/dist/
+/target/
+
+# Ignore dependency and package manager directories
+node_modules/
+vendor/
+.venv/
+env/
+
+# Ignore log files and databases
+*.log
+*.sqlite
+*.db
+
+# Ignore environment variable files (potential secrets)
+.env
+.env.local
+
+# Ignore OS-specific and editor/IDE files
+.DS_Store # macOS system files
+Thumbs.db # Windows system files
+.vscode/ # VS Code configuration folder
+.idea/ # IntelliJ/JetBrains IDE configuration folder
+
+# Ignore compiled code (examples for various languages)
+*.pyc # Python compiled files
+*.class # Java compiled files
+*.o # C/C++ object files
