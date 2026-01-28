@@ -2,12 +2,14 @@ pipeline {
     agent {
         label 'docker-agent-node'
     }
-
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('b6d9feb8-e628-48d2-890a-54817dcb2651')
-        IMAGE_NAME = "sim33k/notes-backend"
+        AWS_CREDENTIALS = credentials('aws-ecr-credentials') // Use the ID you created in step 2
+        AWS_REGION = 'ap-south-1' // Your region from the screenshot
+        AWS_ACCOUNT_ID = '541645813745' // Your account ID from the screenshot
+        ECR_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        ECR_REPOSITORY = "simaak/ecr-test"
+        IMAGE_NAME = "${ECR_REGISTRY}/${ECR_REPOSITORY}"
     }
-
     stages {
         stage('Debug stage') {
             steps {
@@ -26,7 +28,7 @@ pipeline {
                     if ! command -v aws; then
                       curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip
                       unzip awscliv2.zip
-                      ./aws/install
+                      sudo ./aws/install || ./aws/install --install-dir ~/.local/aws-cli --bin-dir ~/.local/bin
                     fi
                 '''
             }
@@ -35,28 +37,37 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image
-                    sh "docker build -t ${IMAGE_NAME}:latest ."
-
+                    sh "docker build -t ${ECR_REPOSITORY}:latest ."
                     // Get the short Git commit hash
                     def commitHash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-
                     // Tag the Docker image with the commit hash
-                    sh "docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:${commitHash}"
+                    sh "docker tag ${ECR_REPOSITORY}:latest ${ECR_REPOSITORY}:${commitHash}"
                 }
             }
         }
-
-        stage('Push to Docker Hub') {
+        stage('Login to AWS ECR') {
             steps {
                 script {
-                    // Login to Docker Hub using credentials
-                    sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
-
-                    // Push the latest tag
-                    sh "docker push ${IMAGE_NAME}:latest"
-
-                    // Push the commit-hash tag
+                    // Configure AWS credentials
+                    sh '''
+                        export AWS_ACCESS_KEY_ID=${AWS_CREDENTIALS_USR}
+                        export AWS_SECRET_ACCESS_KEY=${AWS_CREDENTIALS_PSW}
+                        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                    '''
+                }
+            }
+        }
+        stage('Tag and Push to ECR') {
+            steps {
+                script {
                     def commitHash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    
+                    // Tag images with full ECR path
+                    sh "docker tag ${ECR_REPOSITORY}:latest ${IMAGE_NAME}:latest"
+                    sh "docker tag ${ECR_REPOSITORY}:${commitHash} ${IMAGE_NAME}:${commitHash}"
+                    
+                    // Push to ECR
+                    sh "docker push ${IMAGE_NAME}:latest"
                     sh "docker push ${IMAGE_NAME}:${commitHash}"
                 }
             }
