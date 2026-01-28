@@ -18,6 +18,7 @@ pipeline {
                     whoami
                     uname -a
                 '''
+            }
         }
         stage('Install AWS CLI') {
             steps {
