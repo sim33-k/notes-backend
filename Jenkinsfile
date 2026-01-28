@@ -19,6 +19,17 @@ pipeline {
                     uname -a
                 '''
         }
+        stage('Install AWS CLI') {
+            steps {
+                sh '''
+                    if ! command -v aws; then
+                      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip
+                      unzip awscliv2.zip
+                      ./aws/install
+                    fi
+                '''
+            }
+        }
         stage('Build Docker Image') {
             steps {
                 script {
