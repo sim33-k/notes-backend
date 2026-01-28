@@ -9,6 +9,16 @@ pipeline {
     }
 
     stages {
+        stage('Debug stage') {
+            steps {
+                sh '''
+                    which aws || echo "AWS CLI NOT FOUND"
+                    aws --version || true
+                    docker --version
+                    whoami
+                    uname -a
+                '''
+        }
         stage('Build Docker Image') {
             steps {
                 script {
